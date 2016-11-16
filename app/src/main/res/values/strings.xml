@@ -1,4 +1,11 @@
 <resources>
-    <string name="app_name">Lesson5</string>
+    <string name="app_name">Image Search</string>
     <string name="hint">Superman</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="no_page_found">No page found</string>
+    <string name="large">Large</string>
+    <string name="medium">Medium</string>
+    <string name="small">Small</string>
 </resources>

@@ -4,82 +4,75 @@ import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.util.Log;
+import android.view.ContextMenu;
 import android.view.KeyEvent;
-import android.view.MotionEvent;
+import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.boss.lesson5.Constants;
 import com.example.boss.lesson5.R;
-import com.example.boss.lesson5.adapters.RecyclerAdapter;
-import com.example.boss.lesson5.cache.DiskLruImageCache;
+import com.example.boss.lesson5.eventbus.CustomEvent;
+import com.example.boss.lesson5.eventbus.EventMessage;
+import com.example.boss.lesson5.providers.DataProvider;
 import com.example.boss.lesson5.tasks.GetUrlsTask;
 
-import java.util.ArrayList;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+
+import static com.example.boss.lesson5.providers.DataProvider.isConnected;
+import static com.example.boss.lesson5.providers.DataProvider.isSearching;
+import static com.example.boss.lesson5.providers.DataProvider.query;
 
 
-public class MainActivity extends AppCompatActivity implements View.OnTouchListener {
+public class MainActivity extends AppCompatActivity {
 
-    public DiskLruImageCache diskCache;
-    public RecyclerAdapter adapter;
     ActionBar actionBar;
     ProgressBar progressActionBar;
     ImageView searchIcon;
-    Button button1;
-    Button button2;
-    public static String query = "";
-    ArrayList<String[]> urlsList = new ArrayList<>();
-    final public int bInKB = 1024;
+    ImageView delIcon;
+    ImageView imageSize;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        findAndSetViews();
+        EventBus.getDefault().register(this);
         setUpActionBar();
         setUpSearchBar();
     }
 
-    private void findAndSetViews() {
-        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler);
-        final LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-        setUpCache();
-        setUrlsList();
-        adapter = new RecyclerAdapter(this, diskCache, urlsList);
-        button1 = (Button) findViewById(R.id.button1);
-        button2 = (Button) findViewById(R.id.button2);
-        button1.setPressed(true);
-        button1.setOnTouchListener(this);
-        button2.setOnTouchListener(this);
-        recyclerView.setAdapter(adapter);
-        recyclerView.setLayoutManager(layoutManager);
-        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                if (urlsList.size() - 1 == layoutManager.findLastCompletelyVisibleItemPosition()) {
-                    getUrls();
-                }
-            }
-        });
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        switch (v.getId()) {
+            case R.id.sizeIcon:
+                menu.add(Constants.LARGE);
+                menu.add(Constants.MEDIUM);
+                menu.add(Constants.SMALL);
+                break;
+        }
     }
 
-    public void setUpCache() {
-        final int maxMemory = (int) Runtime.getRuntime().maxMemory() / bInKB;
-        Log.v("myLogs", "Max memory is : " + maxMemory);
-        final int cacheSize = 1024 * 1024 * 10;//10 MB
-
-        diskCache = new DiskLruImageCache(this, Constants.CACHE_DIR, cacheSize);
-    }
-
-    public void setUrlsList() {
-        urlsList = new ArrayList<>();
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        switch (item.getTitle().toString()) {
+            case Constants.LARGE:
+                DataProvider.imageSize = Constants.LARGE;
+                getQuery();
+                break;
+            case Constants.MEDIUM:
+                DataProvider.imageSize = Constants.MEDIUM;
+                getQuery();
+                break;
+            case Constants.SMALL:
+                DataProvider.imageSize = Constants.SMALL;
+                getQuery();
+        }
+        return super.onContextItemSelected(item);
     }
 
     public void setUpActionBar() {
@@ -90,12 +83,28 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
             actionBar.setCustomView(R.layout.search_view);
             progressActionBar = (ProgressBar) actionBar.getCustomView().findViewById(R.id.progressActionBar);
             searchIcon = (ImageView) actionBar.getCustomView().findViewById(R.id.searchIcon);
+            delIcon = (ImageView) actionBar.getCustomView().findViewById(R.id.delIcon);
+            imageSize = (ImageView) actionBar.getCustomView().findViewById(R.id.sizeIcon);
+            imageSize.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+
+                    openContextMenu(imageSize);
+                }
+            });
+            registerForContextMenu(imageSize);
         }
     }
 
     public void setUpSearchBar() {
         final EditText editText = (EditText) actionBar.getCustomView().findViewById(R.id.edtSearch);
         editText.getBackground().mutate().setColorFilter(getResources().getColor(R.color.colorPrimary), PorterDuff.Mode.SRC_ATOP);
+        delIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                editText.setText("");
+            }
+        });
         editText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
@@ -103,39 +112,43 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                 if (!query.equals(newQuery = editText.getText().toString())) {
                     query = newQuery;
                     //Clear old cache
-                    urlsList.clear();
-                    adapter.notifyDataSetChanged();
-                    getUrls();
+                    getQuery();
                 }
                 return true;
             }
         });
     }
 
-    private void getUrls() {
-        new GetUrlsTask(urlsList, adapter, query, progressActionBar, searchIcon).execute();
+    public void getQuery() {
+        EventBus.getDefault().post((new CustomEvent()).setEventMessage(EventMessage.UPDATE_RECYCLER_ADAPTER));
+        DataProvider.getList().clear();
+        getUrls();
     }
 
-    @Override
-    public boolean onTouch(View view, MotionEvent motionEvent) {
-        if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
-            switch (view.getId()) {
-                case R.id.button1:
-                    if (view.isPressed()) {
-                        view.setPressed(false);
-                    } else {
-                        view.setPressed(true);
-                    }
-                    break;
-                case R.id.button2:
-                    if (view.isPressed()) {
-                        view.setPressed(false);
-                    } else {
-                        view.setPressed(true);
-                    }
-                    break;
+    private void getUrls() {
+        if (isConnected(this)) {
+            if (!isSearching) {
+                new GetUrlsTask(query).execute();
             }
+        } else {
+            Toast.makeText(this, Constants.NO_INTERNET, Toast.LENGTH_SHORT).show();
         }
-        return true;
+    }
+
+    @Subscribe
+    public void onEvent(CustomEvent event) {
+        switch (event.getEventMessage()) {
+            case START_URL_SEARCH:
+                searchIcon.setVisibility(View.GONE);
+                progressActionBar.setVisibility(View.VISIBLE);
+                isSearching = true;
+                break;
+            case FINISH_URL_SEARCH:
+                progressActionBar.setVisibility(View.GONE);
+                searchIcon.setVisibility(View.VISIBLE);
+                EventBus.getDefault().post((new CustomEvent()).setEventMessage(EventMessage.UPDATE_RECYCLER_ADAPTER));
+                isSearching = false;
+                break;
+        }
     }
 }
