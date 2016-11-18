@@ -103,7 +103,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<ViewHolder> {
     public void onEvent(CustomEvent event) {
         switch (event.getEventMessage()) {
             case UPDATE_RECYCLER_ADAPTER:
-                if (event.getPosition() != Constants.NULL) {
+                if (event.getPosition() != Constants.EVENT_WRONG_RESULT) {
                     this.notifyItemChanged(event.getPosition());
                 } else {
                     this.notifyDataSetChanged();

@@ -8,6 +8,7 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -23,14 +24,9 @@ import com.example.boss.lesson5.cache.DiskLruImageCache;
 import com.example.boss.lesson5.eventbus.CustomEvent;
 import com.example.boss.lesson5.eventbus.EventMessage;
 import com.example.boss.lesson5.providers.DataProvider;
-import com.example.boss.lesson5.tasks.GetUrlsTask;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
-
-import static com.example.boss.lesson5.providers.DataProvider.isConnected;
-import static com.example.boss.lesson5.providers.DataProvider.isSearching;
-import static com.example.boss.lesson5.providers.DataProvider.query;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -61,6 +57,7 @@ public class RecyclerViewFragment extends Fragment implements View.OnTouchListen
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_recycler, container, false);
         mView = view;
+        Log.v(Constants.LOGS,"fragment onCreateView");
         return view;
     }
 
@@ -73,6 +70,19 @@ public class RecyclerViewFragment extends Fragment implements View.OnTouchListen
     public void onStart() {
         super.onStart();
         findAndSetViews();
+        Log.v(Constants.LOGS,"fragment onStart");
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        Log.v(Constants.LOGS,"fragment onPause");
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.v(Constants.LOGS,"fragment onResume");
     }
 
     @Override
@@ -132,28 +142,18 @@ public class RecyclerViewFragment extends Fragment implements View.OnTouchListen
                     if (layoutManagerType == 0) {
                         lastPosition = ((LinearLayoutManager) layMan).findFirstVisibleItemPosition();
                         if (DataProvider.getList().size() - startImageLoadRowThreshold == ((LinearLayoutManager) layMan).findLastCompletelyVisibleItemPosition()) {
-                            getUrls();
+                            DataProvider.getUrls(getActivity(), DataProvider.query);
                         }
                     }
                     if (layoutManagerType == 1) {
                         lastPosition = ((GridLayoutManager) layMan).findFirstVisibleItemPosition();
                         if (DataProvider.getList().size() - startImageLoadGridThreshold == ((GridLayoutManager) layMan).findLastCompletelyVisibleItemPosition()) {
-                            getUrls();
+                            DataProvider.getUrls(getActivity(), DataProvider.query);
                         }
                     }
                 }
             }
         });
-    }
-
-    private void getUrls() {
-        if (isConnected(getActivity())) {
-            if (!isSearching) {
-                new GetUrlsTask(query).execute();
-            }
-        } else {
-            Toast.makeText(getActivity(), Constants.NO_INTERNET, Toast.LENGTH_SHORT).show();
-        }
     }
 
     @Override

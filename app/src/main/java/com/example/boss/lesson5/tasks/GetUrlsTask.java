@@ -36,7 +36,7 @@ import static com.example.boss.lesson5.Constants.WIDTH;
  * Created by BOSS on 03.11.2016.
  */
 
-public class GetUrlsTask extends AsyncTask<Void, Void, Void> {
+public class GetUrlsTask extends AsyncTask<Boolean, Void, Void> {
 
     private String query;
     private CustomEvent customEvent;
@@ -53,7 +53,8 @@ public class GetUrlsTask extends AsyncTask<Void, Void, Void> {
     }
 
     @Override
-    protected Void doInBackground(Void... voids) {
+    protected Void doInBackground(Boolean... booleans) {
+        DataProvider.isSearching = true;
         HttpURLConnection conn = null;
         BufferedReader br = null;
         try {
@@ -112,6 +113,7 @@ public class GetUrlsTask extends AsyncTask<Void, Void, Void> {
 
     @Override
     protected void onPostExecute(Void aVoid) {
+        DataProvider.isSearching = false;
         customEvent.setEventMessage(EventMessage.FINISH_URL_SEARCH);
         EventBus.getDefault().post(customEvent);
     }

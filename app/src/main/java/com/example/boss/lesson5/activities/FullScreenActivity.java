@@ -12,8 +12,6 @@ import com.example.boss.lesson5.adapters.FullScreenPageAdapter;
 import com.example.boss.lesson5.cache.DiskLruImageCache;
 import com.example.boss.lesson5.providers.DataProvider;
 
-import static com.example.boss.lesson5.Constants.bInKB;
-
 public class FullScreenActivity extends AppCompatActivity {
     private FullScreenPageAdapter adapter;
     private ViewPager viewPager;
@@ -70,8 +68,7 @@ public class FullScreenActivity extends AppCompatActivity {
     }
 
     public void setUpCache() {
-        final int cacheSize = bInKB * bInKB * 10;//10 MB
-        diskCache = new DiskLruImageCache(this, Constants.CACHE_DIR, cacheSize);
+        diskCache = new DiskLruImageCache(this, Constants.CACHE_DIR, Constants.CAHCE_SIZE);
     }
 
 

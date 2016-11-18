@@ -12,21 +12,15 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.boss.lesson5.Constants;
 import com.example.boss.lesson5.R;
 import com.example.boss.lesson5.eventbus.CustomEvent;
 import com.example.boss.lesson5.eventbus.EventMessage;
 import com.example.boss.lesson5.providers.DataProvider;
-import com.example.boss.lesson5.tasks.GetUrlsTask;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
-
-import static com.example.boss.lesson5.providers.DataProvider.isConnected;
-import static com.example.boss.lesson5.providers.DataProvider.isSearching;
-import static com.example.boss.lesson5.providers.DataProvider.query;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -36,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
     ImageView searchIcon;
     ImageView delIcon;
     ImageView imageSize;
+    private String query = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,15 +57,15 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getTitle().toString()) {
             case Constants.LARGE:
                 DataProvider.imageSize = Constants.LARGE;
-                getQuery();
+                DataProvider.getQuery(this, query);
                 break;
             case Constants.MEDIUM:
                 DataProvider.imageSize = Constants.MEDIUM;
-                getQuery();
+                DataProvider.getQuery(this, query);
                 break;
             case Constants.SMALL:
                 DataProvider.imageSize = Constants.SMALL;
-                getQuery();
+                DataProvider.getQuery(this, query);
         }
         return super.onContextItemSelected(item);
     }
@@ -109,31 +104,16 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
                 String newQuery;
-                if (!query.equals(newQuery = editText.getText().toString())) {
+                if (!(newQuery = editText.getText().toString()).equals("")) {
                     query = newQuery;
                     //Clear old cache
-                    getQuery();
+                    DataProvider.getQuery(editText.getContext(), query);
                 }
                 return true;
             }
         });
     }
 
-    public void getQuery() {
-        EventBus.getDefault().post((new CustomEvent()).setEventMessage(EventMessage.UPDATE_RECYCLER_ADAPTER));
-        DataProvider.getList().clear();
-        getUrls();
-    }
-
-    private void getUrls() {
-        if (isConnected(this)) {
-            if (!isSearching) {
-                new GetUrlsTask(query).execute();
-            }
-        } else {
-            Toast.makeText(this, Constants.NO_INTERNET, Toast.LENGTH_SHORT).show();
-        }
-    }
 
     @Subscribe
     public void onEvent(CustomEvent event) {
@@ -141,13 +121,11 @@ public class MainActivity extends AppCompatActivity {
             case START_URL_SEARCH:
                 searchIcon.setVisibility(View.GONE);
                 progressActionBar.setVisibility(View.VISIBLE);
-                isSearching = true;
                 break;
             case FINISH_URL_SEARCH:
                 progressActionBar.setVisibility(View.GONE);
                 searchIcon.setVisibility(View.VISIBLE);
                 EventBus.getDefault().post((new CustomEvent()).setEventMessage(EventMessage.UPDATE_RECYCLER_ADAPTER));
-                isSearching = false;
                 break;
         }
     }
