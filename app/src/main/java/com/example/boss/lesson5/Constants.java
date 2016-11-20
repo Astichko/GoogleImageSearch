@@ -32,7 +32,5 @@ public class Constants {
     final public static String SMALL = "small";
     final public static String MEDIUM = "medium";
     final public static String LARGE = "large";
-    final public static int CAHCE_SIZE = 10485760;//10MB
-
-
+    final public static int CACHE_SIZE = 10485760;//10MB
 }

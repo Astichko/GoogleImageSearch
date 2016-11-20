@@ -3,10 +3,11 @@ package com.example.boss.lesson5.tasks;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.example.boss.lesson5.eventbus.CustomEvent;
+import com.example.boss.lesson5.Constants;
+import com.example.boss.lesson5.eventbus.Event;
 import com.example.boss.lesson5.eventbus.EventMessage;
 import com.example.boss.lesson5.providers.DataProvider;
-import com.example.boss.lesson5.providers.ItemData;
+import com.example.boss.lesson5.models.ItemData;
 
 import org.greenrobot.eventbus.EventBus;
 import org.json.JSONArray;
@@ -39,7 +40,7 @@ import static com.example.boss.lesson5.Constants.WIDTH;
 public class GetUrlsTask extends AsyncTask<Boolean, Void, Void> {
 
     private String query;
-    private CustomEvent customEvent;
+    private Event event;
 
     public GetUrlsTask(String query) {
         this.query = query;
@@ -47,17 +48,18 @@ public class GetUrlsTask extends AsyncTask<Boolean, Void, Void> {
 
     @Override
     protected void onPreExecute() {
-        customEvent = new CustomEvent();
-        customEvent.setEventMessage(EventMessage.START_URL_SEARCH);
-        EventBus.getDefault().post(customEvent);
+        event = new Event();
+        event.setEventMessage(EventMessage.START_URL_SEARCH);
+        EventBus.getDefault().post(event);
+        Log.v(Constants.LOGS, "GetUrlsTask started");
     }
 
     @Override
     protected Void doInBackground(Boolean... booleans) {
-        DataProvider.isSearching = true;
         HttpURLConnection conn = null;
         BufferedReader br = null;
         try {
+            Log.v(Constants.LOGS, "GetUrlsTask doInBackground");
             ArrayList<ItemData> urlsList = DataProvider.getList();
             query = query.replaceAll("\\s+", "+");
             query = URLEncoder.encode(query, "UTF-8");
@@ -113,8 +115,7 @@ public class GetUrlsTask extends AsyncTask<Boolean, Void, Void> {
 
     @Override
     protected void onPostExecute(Void aVoid) {
-        DataProvider.isSearching = false;
-        customEvent.setEventMessage(EventMessage.FINISH_URL_SEARCH);
-        EventBus.getDefault().post(customEvent);
+        event.setEventMessage(EventMessage.FINISH_URL_SEARCH);
+        EventBus.getDefault().post(event);
     }
 }

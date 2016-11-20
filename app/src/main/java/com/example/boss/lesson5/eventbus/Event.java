@@ -4,7 +4,7 @@ package com.example.boss.lesson5.eventbus;
  * Created by BOSS on 11.11.2016.
  */
 
-public class CustomEvent {
+public class Event {
     private EventMessage eventMessage;
 
     private int position = -1;
@@ -21,7 +21,7 @@ public class CustomEvent {
         return eventMessage;
     }
 
-    public CustomEvent setEventMessage(EventMessage eventMessage) {
+    public Event setEventMessage(EventMessage eventMessage) {
         this.eventMessage = eventMessage;
         return this;
     }

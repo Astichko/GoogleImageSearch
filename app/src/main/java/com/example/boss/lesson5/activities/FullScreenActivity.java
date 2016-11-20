@@ -9,13 +9,11 @@ import android.widget.ImageView;
 import com.example.boss.lesson5.Constants;
 import com.example.boss.lesson5.R;
 import com.example.boss.lesson5.adapters.FullScreenPageAdapter;
-import com.example.boss.lesson5.cache.DiskLruImageCache;
 import com.example.boss.lesson5.providers.DataProvider;
 
 public class FullScreenActivity extends AppCompatActivity {
     private FullScreenPageAdapter adapter;
     private ViewPager viewPager;
-    public DiskLruImageCache diskCache;
     public ImageView arrowRight;
     public ImageView arrowLeft;
     public ImageView arrowBack;
@@ -25,7 +23,6 @@ public class FullScreenActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_full_screen);
-        setUpCache();
         findViews();
         setAdapter();
     }
@@ -57,7 +54,7 @@ public class FullScreenActivity extends AppCompatActivity {
     }
 
     public void setAdapter() {
-        adapter = new FullScreenPageAdapter(this, diskCache, DataProvider.getList().size());
+        adapter = new FullScreenPageAdapter(this, DataProvider.getList().size());
         viewPager.setAdapter(adapter);
         Bundle b = getIntent().getExtras();
         int position = 0;
@@ -65,10 +62,6 @@ public class FullScreenActivity extends AppCompatActivity {
             position = b.getInt(Constants.BUNDLE_KEY);
         }
         viewPager.setCurrentItem(position);
-    }
-
-    public void setUpCache() {
-        diskCache = new DiskLruImageCache(this, Constants.CACHE_DIR, Constants.CAHCE_SIZE);
     }
 
 

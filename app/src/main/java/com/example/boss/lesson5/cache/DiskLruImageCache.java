@@ -23,25 +23,34 @@ import java.io.OutputStream;
  */
 
 public class DiskLruImageCache {
-
-    private DiskLruCache mDiskCache;
-    private final Object mDiskCacheLock = new Object();
-    private boolean mDiskCacheStarting = true;
-    private Bitmap.CompressFormat mCompressFormat = Bitmap.CompressFormat.JPEG;
-    private int mCompressQuality = 70;
+    private static DiskLruImageCache instance;
+    private static DiskLruCache mDiskCache;
+    private static final Object mDiskCacheLock = new Object();
+    private static boolean mDiskCacheStarting = true;
+    private static Bitmap.CompressFormat mCompressFormat = Bitmap.CompressFormat.JPEG;
+    private static int mCompressQuality = 70;
     private static final int APP_VERSION = 15;
     private static final int VALUE_COUNT = 1;
-    private static final String TAG = "DiskLruImageCache";
 
-    public DiskLruImageCache(Context context, String uniqueName, int diskCacheSize) {
+    private DiskLruImageCache() {
+    }
+
+    public static void initCache(Context context, String uniqueName, int diskCacheSize) {
         new InitCacheTask(context, uniqueName, diskCacheSize).execute();
+    }
+
+    public static DiskLruImageCache getCache() {
+        if (instance == null) {
+            instance = new DiskLruImageCache();
+        }
+        return instance;
     }
 
     private boolean writeBitmapToFile(Bitmap bitmap, DiskLruCache.Editor editor)
             throws IOException, FileNotFoundException {
         OutputStream out = null;
         try {
-            out = new BufferedOutputStream(editor.newOutputStream(0), Utils.IO_BUFFER_SIZE);
+            out = new BufferedOutputStream(editor.newOutputStream(0));
             return bitmap.compress(mCompressFormat, mCompressQuality, out);
         } finally {
             if (out != null) {
@@ -50,7 +59,7 @@ public class DiskLruImageCache {
         }
     }
 
-    private File getDiskCacheDir(Context context, String uniqueName) {
+    private static File getDiskCacheDir(Context context, String uniqueName) {
         // Check if media is mounted or storage is built-in, if so, try and use external cache dir
         // otherwise use internal cache dir
         final String cachePath =
@@ -167,7 +176,7 @@ public class DiskLruImageCache {
         return mDiskCache.getDirectory();
     }
 
-    public class InitCacheTask extends AsyncTask<Void, Void, Void> {
+    public static class InitCacheTask extends AsyncTask<Void, Void, Void> {
         private Context context;
         private String uniqueName;
         private int diskCacheSize;

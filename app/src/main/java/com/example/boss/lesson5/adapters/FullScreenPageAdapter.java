@@ -1,7 +1,6 @@
 package com.example.boss.lesson5.adapters;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.support.v4.view.PagerAdapter;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -14,14 +13,14 @@ import android.widget.TextView;
 import com.example.boss.lesson5.Constants;
 import com.example.boss.lesson5.R;
 import com.example.boss.lesson5.cache.DiskLruImageCache;
-import com.example.boss.lesson5.eventbus.CustomEvent;
-import com.example.boss.lesson5.providers.ItemData;
+import com.example.boss.lesson5.eventbus.Event;
+import com.example.boss.lesson5.models.ItemData;
 import com.example.boss.lesson5.tasks.ImageNetLoadTask;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.Picasso;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
-
-import java.util.ArrayList;
 
 import static com.example.boss.lesson5.providers.DataProvider.getList;
 
@@ -39,9 +38,9 @@ public class FullScreenPageAdapter extends PagerAdapter {
     private ImageView imageView;
     private TextView noPageFound;
 
-    public FullScreenPageAdapter(Context context, DiskLruImageCache diskCache, int size) {
+    public FullScreenPageAdapter(Context context, int size) {
         this.context = context;
-        this.diskCache = diskCache;
+        this.diskCache = DiskLruImageCache.getCache();
         this.size = size;
         EventBus.getDefault().register(this);
     }
@@ -79,20 +78,37 @@ public class FullScreenPageAdapter extends PagerAdapter {
     }
 
     public void setImage(int position) {
-        ArrayList<ItemData> list = getList();
-        if (!list.isEmpty()) {
-            ItemData item = list.get(position);
-            Bitmap bitmap = diskCache.getBitmap(String.valueOf(item.url.hashCode()));
-            if (bitmap == null) {
-                imageView.setImageBitmap(null);
-            }
-            if (diskCache != null && bitmap != null) {
-                progressBar.setVisibility(View.GONE);
-                imageView.setImageBitmap(bitmap);
-            } else {
-                netImageLoad(item, position);
-            }
-        }
+//        ArrayList<ItemData> list = getList();
+//        if (!list.isEmpty()) {
+//            ItemData item = list.get(position);
+//            Bitmap bitmap = diskCache.getBitmap(String.valueOf(item.url.hashCode()));
+//            if (bitmap == null) {
+//                imageView.setImageBitmap(null);
+//            }
+//            if (diskCache != null && bitmap != null) {
+//                imageView.setImageBitmap(bitmap);
+//                progressBar.setVisibility(View.GONE);
+//            } else {
+//                netImageLoad(item, position);
+//            }
+//        }
+        //Picasso
+        ItemData item = getList().get(position);
+        progressBar.setVisibility(View.VISIBLE);
+        Picasso.with(context)
+                .load(item.url)
+                .into(imageView, new Callback() {
+                    @Override
+                    public void onSuccess() {
+                        progressBar.setVisibility(View.GONE);
+                    }
+
+                    @Override
+                    public void onError() {
+                        // TODO Auto-generated method stub
+                    }
+                });
+
     }
 
     public void netImageLoad(ItemData item, int position) {
@@ -107,7 +123,7 @@ public class FullScreenPageAdapter extends PagerAdapter {
     }
 
     @Subscribe
-    public void onEvent(CustomEvent event) {
+    public void onEvent(Event event) {
         switch (event.getEventMessage()) {
             case UPDATE_PAGE_ADAPTER:
                 Log.v(Constants.LOGS, "PAGE ADAPTER UPDATED");

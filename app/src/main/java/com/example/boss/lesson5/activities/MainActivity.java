@@ -6,6 +6,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.ContextMenu;
 import android.view.KeyEvent;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
@@ -15,7 +16,7 @@ import android.widget.TextView;
 
 import com.example.boss.lesson5.Constants;
 import com.example.boss.lesson5.R;
-import com.example.boss.lesson5.eventbus.CustomEvent;
+import com.example.boss.lesson5.eventbus.Event;
 import com.example.boss.lesson5.eventbus.EventMessage;
 import com.example.boss.lesson5.providers.DataProvider;
 
@@ -43,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu,v,menuInfo);
         switch (v.getId()) {
             case R.id.sizeIcon:
                 menu.add(Constants.LARGE);
@@ -91,6 +93,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onContextMenuClosed(Menu menu) {
+        super.onContextMenuClosed(menu);
+        EventBus.getDefault().post(new Event().setEventMessage(EventMessage.ON_CLOSE_CONTEX_MENU));
+    }
+
     public void setUpSearchBar() {
         final EditText editText = (EditText) actionBar.getCustomView().findViewById(R.id.edtSearch);
         editText.getBackground().mutate().setColorFilter(getResources().getColor(R.color.colorPrimary), PorterDuff.Mode.SRC_ATOP);
@@ -116,7 +124,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     @Subscribe
-    public void onEvent(CustomEvent event) {
+    public void onEvent(Event event) {
         switch (event.getEventMessage()) {
             case START_URL_SEARCH:
                 searchIcon.setVisibility(View.GONE);
@@ -125,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
             case FINISH_URL_SEARCH:
                 progressActionBar.setVisibility(View.GONE);
                 searchIcon.setVisibility(View.VISIBLE);
-                EventBus.getDefault().post((new CustomEvent()).setEventMessage(EventMessage.UPDATE_RECYCLER_ADAPTER));
+                EventBus.getDefault().post((new Event()).setEventMessage(EventMessage.UPDATE_RECYCLER_ADAPTER));
                 break;
         }
     }

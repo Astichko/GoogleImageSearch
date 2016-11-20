@@ -10,13 +10,15 @@ import android.view.ViewGroup;
 import com.example.boss.lesson5.Constants;
 import com.example.boss.lesson5.R;
 import com.example.boss.lesson5.cache.DiskLruImageCache;
-import com.example.boss.lesson5.eventbus.CustomEvent;
+import com.example.boss.lesson5.eventbus.Event;
 import com.example.boss.lesson5.eventbus.EventMessage;
 import com.example.boss.lesson5.holders.ViewHolder;
 import com.example.boss.lesson5.listeners.ImageClickListener;
+import com.example.boss.lesson5.models.ItemData;
 import com.example.boss.lesson5.providers.DataProvider;
-import com.example.boss.lesson5.providers.ItemData;
 import com.example.boss.lesson5.tasks.ImageNetLoadTask;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.Picasso;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -32,14 +34,14 @@ public class RecyclerAdapter extends RecyclerView.Adapter<ViewHolder> {
     private final Context context;
     private LayoutInflater inflater;
     public ArrayList<ItemData> urlsList;
-    private DiskLruImageCache cache;
+    private DiskLruImageCache diskCache;
 
-    public RecyclerAdapter(Context context, DiskLruImageCache cache, ArrayList<ItemData> urlsList) {
+    public RecyclerAdapter(Context context) {
         inflater = LayoutInflater.from(context);
         EventBus.getDefault().register(this);
         this.context = context;
-        this.urlsList = urlsList;
-        this.cache = cache;
+        this.urlsList = DataProvider.getList();
+        this.diskCache = DiskLruImageCache.getCache();
     }
 
 
@@ -59,30 +61,53 @@ public class RecyclerAdapter extends RecyclerView.Adapter<ViewHolder> {
     }
 
     public void onImageBind(final ViewHolder holder, int position) {
-        if (!urlsList.isEmpty()) {
-            ItemData item = urlsList.get(position);
-            Bitmap bitmap = cache.getBitmap(String.valueOf(item.url.hashCode()));
-            holder.noPageFound.setVisibility(View.GONE);
-            if (bitmap == null) {
-                holder.imageView.setImageBitmap(null);
-            }
-            if (cache != null && bitmap != null) {
-                setBitmapFromCache(holder, position, bitmap);
-            } else {
-                netImageLoad(item, holder);
-            }
-        }
-    }
-
-    public void setBitmapFromCache(final ViewHolder holder, int position, Bitmap bitmap) {
-        holder.progressBar.setVisibility(View.GONE);
-        holder.imageView.setImageBitmap(bitmap);
+//        if (!urlsList.isEmpty()) {
+//            ItemData item = urlsList.get(position);
+//            Bitmap bitmap = diskCache.getBitmap(String.valueOf(item.url.hashCode()));
+//            holder.noPageFound.setVisibility(View.GONE);
+//            if (bitmap == null) {
+//                holder.imageView.setImageBitmap(null);
+//            }
+//            if (diskCache != null && bitmap != null) {
+//                setBitmapFromCache(holder, position, bitmap);
+//            } else {
+//                netImageLoad(item, holder);
+//            }
+//        }
+        //Picasso
+        ItemData item = urlsList.get(position);
         holder.imageView.setOnClickListener(new ImageClickListener(position, new ImageClickListener.ClickListener() {
             @Override
             public void onClick(View view, int position) {
-                CustomEvent customEvent = new CustomEvent();
-                customEvent.setPosition(position);
-                EventBus.getDefault().post(customEvent.setEventMessage(EventMessage.FULL_SCREEN));
+                Event event = new Event();
+                event.setPosition(position);
+                EventBus.getDefault().post(event.setEventMessage(EventMessage.FULL_SCREEN));
+            }
+        }));
+        holder.progressBar.setVisibility(View.VISIBLE);
+        Picasso.with(context)
+                .load(item.url)
+                .into(holder.imageView,new Callback() {
+                    @Override
+                    public void onSuccess() {
+                        holder.progressBar.setVisibility(View.GONE);
+                    }
+                    @Override
+                    public void onError() {
+                        // TODO Auto-generated method stub
+                    }
+                });
+    }
+
+    public void setBitmapFromCache(final ViewHolder holder, int position, Bitmap bitmap) {
+        holder.imageView.setImageBitmap(bitmap);
+        holder.progressBar.setVisibility(View.GONE);
+        holder.imageView.setOnClickListener(new ImageClickListener(position, new ImageClickListener.ClickListener() {
+            @Override
+            public void onClick(View view, int position) {
+                Event event = new Event();
+                event.setPosition(position);
+                EventBus.getDefault().post(event.setEventMessage(EventMessage.FULL_SCREEN));
             }
         }));
     }
@@ -90,7 +115,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<ViewHolder> {
     public void netImageLoad(ItemData item, ViewHolder holder) {
         if (!item.isLoading && DataProvider.isConnected(context)) {
             if (item.conAttempts <= Constants.MAX_CON_ATTEMPTS) {
-                ImageNetLoadTask loadImageTask = new ImageNetLoadTask(holder, cache);
+                ImageNetLoadTask loadImageTask = new ImageNetLoadTask(holder, diskCache);
                 loadImageTask.execute(item);
             } else {
                 holder.progressBar.setVisibility(View.GONE);
@@ -100,7 +125,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<ViewHolder> {
     }
 
     @Subscribe
-    public void onEvent(CustomEvent event) {
+    public void onEvent(Event event) {
         switch (event.getEventMessage()) {
             case UPDATE_RECYCLER_ADAPTER:
                 if (event.getPosition() != Constants.EVENT_WRONG_RESULT) {

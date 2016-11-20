@@ -8,10 +8,10 @@ import android.view.View;
 import android.widget.ProgressBar;
 
 import com.example.boss.lesson5.cache.DiskLruImageCache;
-import com.example.boss.lesson5.eventbus.CustomEvent;
+import com.example.boss.lesson5.eventbus.Event;
 import com.example.boss.lesson5.eventbus.EventMessage;
 import com.example.boss.lesson5.holders.ViewHolder;
-import com.example.boss.lesson5.providers.ItemData;
+import com.example.boss.lesson5.models.ItemData;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -99,7 +99,7 @@ public class ImageNetLoadTask extends AsyncTask<ItemData, Void, Void> {
 
     @Override
     protected void onPostExecute(Void avoid) {
-        CustomEvent event = new CustomEvent();
+        Event event = new Event();
         event.setPosition(position);
         EventBus.getDefault().post(event.setEventMessage(message));
     }

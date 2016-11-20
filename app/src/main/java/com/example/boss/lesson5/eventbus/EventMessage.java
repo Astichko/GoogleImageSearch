@@ -11,4 +11,5 @@ public enum EventMessage {
     FULL_SCREEN,
     NO_INTERNET,
     UPDATE_PAGE_ADAPTER,
+    ON_CLOSE_CONTEX_MENU
 }

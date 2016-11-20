@@ -21,7 +21,7 @@ import com.example.boss.lesson5.R;
 import com.example.boss.lesson5.activities.FullScreenActivity;
 import com.example.boss.lesson5.adapters.RecyclerAdapter;
 import com.example.boss.lesson5.cache.DiskLruImageCache;
-import com.example.boss.lesson5.eventbus.CustomEvent;
+import com.example.boss.lesson5.eventbus.Event;
 import com.example.boss.lesson5.eventbus.EventMessage;
 import com.example.boss.lesson5.providers.DataProvider;
 
@@ -57,7 +57,7 @@ public class RecyclerViewFragment extends Fragment implements View.OnTouchListen
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_recycler, container, false);
         mView = view;
-        Log.v(Constants.LOGS,"fragment onCreateView");
+        Log.v(Constants.LOGS, "fragment onCreateView");
         return view;
     }
 
@@ -70,19 +70,19 @@ public class RecyclerViewFragment extends Fragment implements View.OnTouchListen
     public void onStart() {
         super.onStart();
         findAndSetViews();
-        Log.v(Constants.LOGS,"fragment onStart");
+        Log.v(Constants.LOGS, "fragment onStart");
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        Log.v(Constants.LOGS,"fragment onPause");
+        Log.v(Constants.LOGS, "fragment onPause");
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        Log.v(Constants.LOGS,"fragment onResume");
+        Log.v(Constants.LOGS, "fragment onResume");
     }
 
     @Override
@@ -92,9 +92,9 @@ public class RecyclerViewFragment extends Fragment implements View.OnTouchListen
 
     private void findAndSetViews() {
         setUpEventBus();
-        setUpCache();
+        initCache();
         setUpButtons();
-        adapter = new RecyclerAdapter(getActivity(), diskCache, DataProvider.getList());
+        adapter = new RecyclerAdapter(getActivity());
         setUpRecycler();
     }
 
@@ -105,9 +105,8 @@ public class RecyclerViewFragment extends Fragment implements View.OnTouchListen
         }
     }
 
-    public void setUpCache() {
-        final int cacheSize = bInKB * bInKB * 10;//10 MB
-        diskCache = new DiskLruImageCache(getActivity(), Constants.CACHE_DIR, cacheSize);
+    public void initCache() {
+        DiskLruImageCache.initCache(getActivity(), Constants.CACHE_DIR, Constants.CACHE_SIZE);
     }
 
     public void setUpButtons() {
@@ -156,9 +155,11 @@ public class RecyclerViewFragment extends Fragment implements View.OnTouchListen
         });
     }
 
+
     @Override
     public boolean onTouch(View view, MotionEvent motionEvent) {
         if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+            Log.v(Constants.LOGS, "Event ACTION_DOWN");
             switch (view.getId()) {
                 case R.id.buttonRow:
                     if (!buttonRow.isPressed()) {
@@ -175,7 +176,12 @@ public class RecyclerViewFragment extends Fragment implements View.OnTouchListen
                     }
                     break;
             }
+        } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+            Log.v(Constants.LOGS, "Event ACTION_UP");
+        } else if (motionEvent.getAction() == MotionEvent.ACTION_CANCEL) {
+            Log.v(Constants.LOGS, "Event ACTION_CANCEL");
         }
+        Log.v(Constants.LOGS, "Event CLICKED");
         return true;
     }
 
@@ -184,7 +190,7 @@ public class RecyclerViewFragment extends Fragment implements View.OnTouchListen
         recyclerView.setLayoutManager(gridLayoutManager);
         layoutManagerType = Constants.GRID_MANAGER;
         gridLayoutManager.scrollToPosition(lastPosition);
-        bus.post((new CustomEvent()).setEventMessage(EventMessage.UPDATE_RECYCLER_ADAPTER));
+        bus.post((new Event()).setEventMessage(EventMessage.UPDATE_RECYCLER_ADAPTER));
     }
 
     public void setLinearManager() {
@@ -192,12 +198,12 @@ public class RecyclerViewFragment extends Fragment implements View.OnTouchListen
         recyclerView.setLayoutManager(linearLayoutManager);
         layoutManagerType = Constants.LINEAR_MANAGER;
         linearLayoutManager.scrollToPosition(lastPosition);
-        bus.post((new CustomEvent()).setEventMessage(EventMessage.UPDATE_RECYCLER_ADAPTER));
+        bus.post((new Event()).setEventMessage(EventMessage.UPDATE_RECYCLER_ADAPTER));
     }
 
 
     @Subscribe
-    public void onEvent(CustomEvent event) {
+    public void onEvent(Event event) {
         switch (event.getEventMessage()) {
             case FULL_SCREEN:
                 Intent intent = new Intent(getActivity(), FullScreenActivity.class);
@@ -206,6 +212,9 @@ public class RecyclerViewFragment extends Fragment implements View.OnTouchListen
                 break;
             case NO_INTERNET:
                 Toast.makeText(getActivity(), Constants.NO_INTERNET, Toast.LENGTH_SHORT).show();
+                break;
+            case ON_CLOSE_CONTEX_MENU:
+                setPressed();
                 break;
         }
     }

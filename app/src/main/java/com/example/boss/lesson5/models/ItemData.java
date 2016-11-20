@@ -1,4 +1,4 @@
-package com.example.boss.lesson5.providers;
+package com.example.boss.lesson5.models;
 
 /**
  * Created by BOSS on 14.11.2016.
