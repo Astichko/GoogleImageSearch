@@ -17,8 +17,6 @@ import com.example.boss.lesson5.listeners.ImageClickListener;
 import com.example.boss.lesson5.models.ItemData;
 import com.example.boss.lesson5.providers.DataProvider;
 import com.example.boss.lesson5.tasks.ImageNetLoadTask;
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.Picasso;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -61,42 +59,19 @@ public class RecyclerAdapter extends RecyclerView.Adapter<ViewHolder> {
     }
 
     public void onImageBind(final ViewHolder holder, int position) {
-//        if (!urlsList.isEmpty()) {
-//            ItemData item = urlsList.get(position);
-//            Bitmap bitmap = diskCache.getBitmap(String.valueOf(item.url.hashCode()));
-//            holder.noPageFound.setVisibility(View.GONE);
-//            if (bitmap == null) {
-//                holder.imageView.setImageBitmap(null);
-//            }
-//            if (diskCache != null && bitmap != null) {
-//                setBitmapFromCache(holder, position, bitmap);
-//            } else {
-//                netImageLoad(item, holder);
-//            }
-//        }
-        //Picasso
-        ItemData item = urlsList.get(position);
-        holder.imageView.setOnClickListener(new ImageClickListener(position, new ImageClickListener.ClickListener() {
-            @Override
-            public void onClick(View view, int position) {
-                Event event = new Event();
-                event.setPosition(position);
-                EventBus.getDefault().post(event.setEventMessage(EventMessage.FULL_SCREEN));
+        if (!urlsList.isEmpty()) {
+            ItemData item = urlsList.get(position);
+            Bitmap bitmap = diskCache.getBitmap(String.valueOf(item.url.hashCode()));
+            holder.noPageFound.setVisibility(View.GONE);
+            if (bitmap == null) {
+                holder.imageView.setImageBitmap(null);
             }
-        }));
-        holder.progressBar.setVisibility(View.VISIBLE);
-        Picasso.with(context)
-                .load(item.url)
-                .into(holder.imageView,new Callback() {
-                    @Override
-                    public void onSuccess() {
-                        holder.progressBar.setVisibility(View.GONE);
-                    }
-                    @Override
-                    public void onError() {
-                        // TODO Auto-generated method stub
-                    }
-                });
+            if (bitmap != null) {
+                setBitmapFromCache(holder, position, bitmap);
+            } else {
+                netImageLoad(item, holder);
+            }
+        }
     }
 
     public void setBitmapFromCache(final ViewHolder holder, int position, Bitmap bitmap) {
