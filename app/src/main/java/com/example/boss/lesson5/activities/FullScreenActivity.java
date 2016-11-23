@@ -11,13 +11,15 @@ import com.example.boss.lesson5.R;
 import com.example.boss.lesson5.adapters.FullScreenPageAdapter;
 import com.example.boss.lesson5.providers.DataProvider;
 
+import org.greenrobot.eventbus.EventBus;
+
 public class FullScreenActivity extends AppCompatActivity {
+
     private FullScreenPageAdapter adapter;
     private ViewPager viewPager;
     public ImageView arrowRight;
     public ImageView arrowLeft;
     public ImageView arrowBack;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,5 +66,9 @@ public class FullScreenActivity extends AppCompatActivity {
         viewPager.setCurrentItem(position);
     }
 
-
+    @Override
+    protected void onDestroy() {
+        EventBus.getDefault().unregister(FullScreenPageAdapter.class);
+        super.onDestroy();
+    }
 }

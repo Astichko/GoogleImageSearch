@@ -8,6 +8,4 @@ public class ItemData {
     public String width;
     public String height;
     public String url;
-    public boolean isLoading;
-    public int conAttempts = 0;
 }

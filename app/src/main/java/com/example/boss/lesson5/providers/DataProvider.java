@@ -3,7 +3,6 @@ package com.example.boss.lesson5.providers;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.example.boss.lesson5.Constants;
@@ -40,7 +39,6 @@ public class DataProvider {
         return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
     }
 
-
     public static void getQuery(Context context, String query) {
         EventBus.getDefault().post((new Event()).setEventMessage(EventMessage.UPDATE_RECYCLER_ADAPTER));
         DataProvider.getList().clear();
@@ -50,8 +48,7 @@ public class DataProvider {
     public static void getUrls(Context context, String query1) {
         query = query1;
         if (isConnected(context)) {
-            if (getUrlsTask == null || !getUrlsTask.getStatus().toString().equals("PENDING")) {
-                Log.v(Constants.LOGS, "GET URLS");
+            if (getUrlsTask == null || !getUrlsTask.getStatus().toString().equals(Constants.RUNNING)) {
                 getUrlsTask= new  GetUrlsTask(query);
                 getUrlsTask.execute();
             }

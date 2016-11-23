@@ -14,20 +14,21 @@
 
     <ImageView
         android:id="@+id/backArrow"
-        android:layout_marginTop="20dp"
-        android:layout_marginLeft="20dp"
         android:layout_width="40dp"
         android:layout_height="40dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginTop="20dp"
         app:srcCompat="@drawable/back_arrow" />
 
     <ImageView
         android:id="@+id/arrowRight"
         android:layout_width="60dp"
         android:layout_height="60dp"
-        android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
         android:layout_centerVertical="true"
         app:srcCompat="@drawable/move_to_right" />
+
     <ImageView
         android:id="@+id/arrowLeft"
         android:layout_width="60dp"

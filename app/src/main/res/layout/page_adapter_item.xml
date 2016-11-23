@@ -9,14 +9,15 @@
         android:layout_height="match_parent" />
 
     <ProgressBar
-        android:indeterminate="true"
         android:id="@+id/progressBar"
-        android:visibility="gone"
         style="?android:attr/progressBarStyle"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="@dimen/progress_bar_width"
+        android:layout_height="@dimen/progress_bar_width"
+        android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true" />
+        android:indeterminate="true"
+        android:visibility="gone" />
+
     <TextView
         android:id="@+id/noPageFoundText"
         android:layout_width="wrap_content"
@@ -24,12 +25,9 @@
         android:layout_centerHorizontal="true"
         android:layout_centerInParent="true"
         android:layout_centerVertical="true"
-        android:text="@string/no_page_found"
         android:textColor="@color/colorWhite"
         android:textSize="20sp"
         android:visibility="gone" />
-
-
 
 
 </RelativeLayout>

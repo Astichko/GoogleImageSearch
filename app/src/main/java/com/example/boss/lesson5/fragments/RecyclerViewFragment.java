@@ -20,7 +20,6 @@ import com.example.boss.lesson5.Constants;
 import com.example.boss.lesson5.R;
 import com.example.boss.lesson5.activities.FullScreenActivity;
 import com.example.boss.lesson5.adapters.RecyclerAdapter;
-import com.example.boss.lesson5.cache.DiskLruImageCache;
 import com.example.boss.lesson5.eventbus.Event;
 import com.example.boss.lesson5.eventbus.EventMessage;
 import com.example.boss.lesson5.providers.DataProvider;
@@ -38,14 +37,12 @@ public class RecyclerViewFragment extends Fragment implements View.OnTouchListen
         // Required empty public constructor
     }
 
-    public DiskLruImageCache diskCache;
     public RecyclerAdapter adapter;
     public EventBus bus;
     protected View mView;
     public RecyclerView recyclerView;
     public ImageButton buttonRow;
     public ImageButton buttonGrid;
-    final public int bInKB = 1024;
     final private int startImageLoadRowThreshold = 3;
     final private int startImageLoadGridThreshold = 5;
     public static int lastPosition = 0;
@@ -74,25 +71,12 @@ public class RecyclerViewFragment extends Fragment implements View.OnTouchListen
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
-        Log.v(Constants.LOGS, "fragment onPause");
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        Log.v(Constants.LOGS, "fragment onResume");
-    }
-
-    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
     }
 
     private void findAndSetViews() {
         setUpEventBus();
-        initCache();
         setUpButtons();
         adapter = new RecyclerAdapter(getActivity());
         setUpRecycler();
@@ -103,10 +87,6 @@ public class RecyclerViewFragment extends Fragment implements View.OnTouchListen
         if (!bus.isRegistered(this)) {
             bus.register(this);
         }
-    }
-
-    public void initCache() {
-        DiskLruImageCache.initCache(getActivity(), Constants.CACHE_DIR, Constants.CACHE_SIZE);
     }
 
     public void setUpButtons() {
@@ -159,7 +139,6 @@ public class RecyclerViewFragment extends Fragment implements View.OnTouchListen
     @Override
     public boolean onTouch(View view, MotionEvent motionEvent) {
         if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
-            Log.v(Constants.LOGS, "Event ACTION_DOWN");
             switch (view.getId()) {
                 case R.id.buttonRow:
                     if (!buttonRow.isPressed()) {
@@ -176,12 +155,7 @@ public class RecyclerViewFragment extends Fragment implements View.OnTouchListen
                     }
                     break;
             }
-        } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
-            Log.v(Constants.LOGS, "Event ACTION_UP");
-        } else if (motionEvent.getAction() == MotionEvent.ACTION_CANCEL) {
-            Log.v(Constants.LOGS, "Event ACTION_CANCEL");
         }
-        Log.v(Constants.LOGS, "Event CLICKED");
         return true;
     }
 
@@ -213,11 +187,15 @@ public class RecyclerViewFragment extends Fragment implements View.OnTouchListen
             case NO_INTERNET:
                 Toast.makeText(getActivity(), Constants.NO_INTERNET, Toast.LENGTH_SHORT).show();
                 break;
-            case ON_CLOSE_CONTEX_MENU:
+            case ON_CLOSE_CONTEXT_MENU:
                 setPressed();
                 break;
         }
     }
 
-
+    @Override
+    public void onDestroy() {
+        EventBus.getDefault().unregister(this);
+        super.onDestroy();
+    }
 }

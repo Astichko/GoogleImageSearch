@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 import com.example.boss.lesson5.Constants;
 import com.example.boss.lesson5.R;
+import com.example.boss.lesson5.adapters.RecyclerAdapter;
 import com.example.boss.lesson5.eventbus.Event;
 import com.example.boss.lesson5.eventbus.EventMessage;
 import com.example.boss.lesson5.providers.DataProvider;
@@ -44,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-        super.onCreateContextMenu(menu,v,menuInfo);
+        super.onCreateContextMenu(menu, v, menuInfo);
         switch (v.getId()) {
             case R.id.sizeIcon:
                 menu.add(Constants.LARGE);
@@ -96,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onContextMenuClosed(Menu menu) {
         super.onContextMenuClosed(menu);
-        EventBus.getDefault().post(new Event().setEventMessage(EventMessage.ON_CLOSE_CONTEX_MENU));
+        EventBus.getDefault().post(new Event().setEventMessage(EventMessage.ON_CLOSE_CONTEXT_MENU));
     }
 
     public void setUpSearchBar() {
@@ -122,7 +123,6 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-
     @Subscribe
     public void onEvent(Event event) {
         switch (event.getEventMessage()) {
@@ -136,5 +136,12 @@ public class MainActivity extends AppCompatActivity {
                 EventBus.getDefault().post((new Event()).setEventMessage(EventMessage.UPDATE_RECYCLER_ADAPTER));
                 break;
         }
+    }
+
+    @Override
+    public void onDestroy() {
+        EventBus.getDefault().unregister(this);
+        EventBus.getDefault().unregister(RecyclerAdapter.class);
+        super.onDestroy();
     }
 }
