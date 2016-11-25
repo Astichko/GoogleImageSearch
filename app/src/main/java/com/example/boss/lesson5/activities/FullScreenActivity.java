@@ -3,7 +3,6 @@ package com.example.boss.lesson5.activities;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.view.View;
 import android.widget.ImageView;
 
 import com.example.boss.lesson5.Constants;
@@ -30,28 +29,13 @@ public class FullScreenActivity extends AppCompatActivity {
     }
 
     public void findViews() {
-        viewPager = (ViewPager) findViewById(R.id.viewPager);
-        arrowRight = (ImageView) findViewById(R.id.arrowRight);
-        arrowLeft = (ImageView) findViewById(R.id.arrowLeft);
-        arrowRight.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                viewPager.setCurrentItem(viewPager.getCurrentItem() + 1, true);
-            }
-        });
-        arrowLeft.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                viewPager.setCurrentItem(viewPager.getCurrentItem() - 1, true);
-            }
-        });
-        arrowBack = (ImageView) findViewById(R.id.backArrow);
-        arrowBack.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                finish();
-            }
-        });
+        viewPager = (ViewPager) findViewById(R.id.view_pager);
+        arrowRight = (ImageView) findViewById(R.id.arrow_right);
+        arrowLeft = (ImageView) findViewById(R.id.arrow_left);
+        arrowRight.setOnClickListener(view -> viewPager.setCurrentItem(viewPager.getCurrentItem() + 1, true));
+        arrowLeft.setOnClickListener(view -> viewPager.setCurrentItem(viewPager.getCurrentItem() - 1, true));
+        arrowBack = (ImageView) findViewById(R.id.back_arrow);
+        arrowBack.setOnClickListener(view -> finish());
         getSupportActionBar().hide();
     }
 

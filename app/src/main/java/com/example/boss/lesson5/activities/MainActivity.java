@@ -5,14 +5,12 @@ import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.ContextMenu;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import com.example.boss.lesson5.Constants;
 import com.example.boss.lesson5.R;
@@ -47,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
         switch (v.getId()) {
-            case R.id.sizeIcon:
+            case R.id.size_icon:
                 menu.add(Constants.LARGE);
                 menu.add(Constants.MEDIUM);
                 menu.add(Constants.SMALL);
@@ -79,17 +77,11 @@ public class MainActivity extends AppCompatActivity {
             actionBar.setDisplayShowCustomEnabled(true);
             actionBar.setDisplayShowTitleEnabled(false);
             actionBar.setCustomView(R.layout.search_view);
-            progressActionBar = (ProgressBar) actionBar.getCustomView().findViewById(R.id.progressActionBar);
-            searchIcon = (ImageView) actionBar.getCustomView().findViewById(R.id.searchIcon);
+            progressActionBar = (ProgressBar) actionBar.getCustomView().findViewById(R.id.progress_action_bar);
+            searchIcon = (ImageView) actionBar.getCustomView().findViewById(R.id.search_icon);
             delIcon = (ImageView) actionBar.getCustomView().findViewById(R.id.delIcon);
-            imageSize = (ImageView) actionBar.getCustomView().findViewById(R.id.sizeIcon);
-            imageSize.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-
-                    openContextMenu(imageSize);
-                }
-            });
+            imageSize = (ImageView) actionBar.getCustomView().findViewById(R.id.size_icon);
+            imageSize.setOnClickListener(view -> openContextMenu(imageSize));
             registerForContextMenu(imageSize);
         }
     }
@@ -101,25 +93,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void setUpSearchBar() {
-        final EditText editText = (EditText) actionBar.getCustomView().findViewById(R.id.edtSearch);
+        final EditText editText = (EditText) actionBar.getCustomView().findViewById(R.id.edt_search);
         editText.getBackground().mutate().setColorFilter(getResources().getColor(R.color.colorPrimary), PorterDuff.Mode.SRC_ATOP);
-        delIcon.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                editText.setText("");
+        delIcon.setOnClickListener(view -> editText.setText(""));
+        editText.setOnEditorActionListener((textView, i, keyEvent) -> {
+            String newQuery;
+            if (!(newQuery = editText.getText().toString()).equals("")) {
+                query = newQuery;
+                //Clear old cache
+                DataProvider.getQuery(editText.getContext(), query);
             }
-        });
-        editText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
-                String newQuery;
-                if (!(newQuery = editText.getText().toString()).equals("")) {
-                    query = newQuery;
-                    //Clear old cache
-                    DataProvider.getQuery(editText.getContext(), query);
-                }
-                return true;
-            }
+            return true;
         });
     }
 

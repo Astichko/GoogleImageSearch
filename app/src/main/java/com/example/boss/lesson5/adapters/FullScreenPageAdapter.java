@@ -49,7 +49,7 @@ public class FullScreenPageAdapter extends PagerAdapter {
     public Object instantiateItem(ViewGroup container, int position) {
         layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View view = layoutInflater.inflate(R.layout.page_adapter_item, container, false);
-        imageView = (ImageView) view.findViewById(R.id.imageFSView);
+        imageView = (ImageView) view.findViewById(R.id.image_fs_view);
         setImage(position);
         container.addView(view);
         return view;

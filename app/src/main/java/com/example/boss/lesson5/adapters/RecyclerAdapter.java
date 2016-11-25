@@ -57,14 +57,12 @@ public class RecyclerAdapter extends RecyclerView.Adapter<ViewHolder> {
 
     public void onImageBind(final ViewHolder holder, int position) {
         ItemData item = urlsList.get(position);
-        holder.imageView.setOnClickListener(new ImageClickListener(position, new ImageClickListener.ClickListener() {
-            @Override
-            public void onClick(View view, int position) {
-                Event event = new Event();
-                event.setPosition(position);
-                EventBus.getDefault().post(event.setEventMessage(EventMessage.FULL_SCREEN));
-            }
+        holder.imageView.setOnClickListener(new ImageClickListener(position, (view, position1) -> {
+            Event event = new Event();
+            event.setPosition(position1);
+            EventBus.getDefault().post(event.setEventMessage(EventMessage.FULL_SCREEN));
         }));
+        holder.progressBar.setVisibility(View.VISIBLE);
         Glide.with(context).load(item.url)
                 .asBitmap()
                 .dontAnimate()

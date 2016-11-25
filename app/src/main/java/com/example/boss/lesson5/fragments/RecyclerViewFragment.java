@@ -90,8 +90,8 @@ public class RecyclerViewFragment extends Fragment implements View.OnTouchListen
     }
 
     public void setUpButtons() {
-        buttonRow = (ImageButton) mView.findViewById(R.id.buttonRow);
-        buttonGrid = (ImageButton) mView.findViewById(R.id.buttonGrid);
+        buttonRow = (ImageButton) mView.findViewById(R.id.button_row);
+        buttonGrid = (ImageButton) mView.findViewById(R.id.button_grid);
         setPressed();
         buttonRow.setOnTouchListener(this);
         buttonGrid.setOnTouchListener(this);
@@ -135,19 +135,18 @@ public class RecyclerViewFragment extends Fragment implements View.OnTouchListen
         });
     }
 
-
     @Override
     public boolean onTouch(View view, MotionEvent motionEvent) {
         if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
             switch (view.getId()) {
-                case R.id.buttonRow:
+                case R.id.button_row:
                     if (!buttonRow.isPressed()) {
                         buttonRow.setPressed(true);
                         buttonGrid.setPressed(false);
                         setLinearManager();
                     }
                     break;
-                case R.id.buttonGrid:
+                case R.id.button_grid:
                     if (!buttonGrid.isPressed()) {
                         buttonGrid.setPressed(true);
                         buttonRow.setPressed(false);
